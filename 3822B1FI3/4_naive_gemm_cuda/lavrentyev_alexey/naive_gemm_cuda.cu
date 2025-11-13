@@ -1,10 +1,10 @@
 #include "naive_gemm_cuda.h"
 #include <cuda_runtime.h>
 
-constexpr int cuda_block_size = 32;
+constexpr int cuda_block_size = 64;
 using std::vector;
 
-__global__ void SmallMultKernel(const float* a, const float* b, float* ans, int n) {
+__global__ void MatMul(const float* a, const float* b, float* ans, int n) {
 
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -36,7 +36,7 @@ __host__ vector<float> NaiveGemmCUDA(const vector<float>& a,
     dim3 kernel_size(dim_size, dim_size);
     dim3 block(cuda_block_size, cuda_block_size);
 
-    SmallMultKernel<<<kernel_size, block>>> (in1, in2, ans, n);
+    MatMul<<<kernel_size, block>>> (in1, in2, ans, n);
     cudaMemcpy(result.data(), ans, req_mem, cudaMemcpyKind::cudaMemcpyDeviceToHost);
 
     cudaFree(in1);
